@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFolder, Menu } from 'obsidian';
 import { GalleryView, GALLERY_VIEW_TYPE } from './view';
 
 // Remember to rename these classes and interfaces!
@@ -20,6 +20,31 @@ export default class MyPlugin extends Plugin {
 		this.registerView(
 			GALLERY_VIEW_TYPE,
 			(leaf) => new GalleryView(leaf)
+		);
+
+		this.registerEvent(
+			this.app.workspace.on('file-menu', (menu: Menu, file) => {
+				if (file instanceof TFolder) {
+					menu.addItem((item) => {
+						item
+							.setTitle("以画廊形式查看")
+							.setIcon("blocks") // 'blocks' looks like a gallery
+							.onClick(async () => {
+								this.app.workspace.detachLeavesOfType(GALLERY_VIEW_TYPE);
+
+								const newLeaf = this.app.workspace.getLeaf(true);
+
+								await newLeaf.setViewState({
+									type: GALLERY_VIEW_TYPE,
+									active: true,
+									state: { folderPath: file.path },
+								});
+
+								this.app.workspace.revealLeaf(newLeaf);
+							});
+					});
+				}
+			})
 		);
 
 		// This creates an icon in the left ribbon.
