@@ -1,11 +1,9 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "folder-gallery",
+	"name": "Folder Gallery",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"description": "右键点击文件夹，以带有封面和摘要的精美画廊视图来浏览其中的笔记。",
+	"author": "携程doublecore",
 	"isDesktopOnly": false
 }
