@@ -54,7 +54,57 @@ export class GalleryView extends ItemView {
 		for (const file of folder.children) {
 			if (file instanceof TFile && file.extension === 'md') {
 				const card = gridContainer.createDiv({ cls: "gallery-card" });
-				card.createEl("h3", { text: file.basename }); // Use basename to get name without extension
+
+				// --- 视觉优化逻辑 ---
+
+				const fileCache = this.app.metadataCache.getFileCache(file);
+
+				// 1. 查找封面图片
+				let imageUrl: string | null = null;
+				const imagePath = fileCache?.frontmatter?.image || fileCache?.frontmatter?.cover;
+
+				if (imagePath) {
+					const imageFile = this.app.metadataCache.getFirstLinkpathDest(imagePath, file.path);
+					if (imageFile instanceof TFile) {
+						imageUrl = this.app.vault.getResourcePath(imageFile);
+					}
+				} else {
+					const firstEmbed = fileCache?.embeds?.find(embed => /\.(png|jpg|jpeg|gif|bmp|svg)$/i.test(embed.link));
+					if (firstEmbed) {
+						const imageFile = this.app.metadataCache.getFirstLinkpathDest(firstEmbed.link, file.path);
+						if (imageFile instanceof TFile) {
+							imageUrl = this.app.vault.getResourcePath(imageFile);
+						}
+					}
+				}
+
+				const imageContainer = card.createDiv({ cls: "gallery-card-image-container" });
+				if (imageUrl) {
+					imageContainer.createEl("img", { attr: { src: imageUrl }, cls: "gallery-card-image" });
+				} else {
+					imageContainer.addClass("no-image");
+				}
+				
+				const textContainer = card.createDiv({ cls: "gallery-card-text-container" });
+
+				// 2. 添加标题
+				textContainer.createEl("h3", { text: file.basename });
+
+				// 3. 添加内容摘要
+				const content = await this.app.vault.cachedRead(file);
+				const summaryText = content
+					.replace(/---[\s\S]*?---/, "") // 移除 frontmatter
+					.replace(/#+\s/g, "")           // 移除标题标记
+					.replace(/(\[\[.*?\]\]|\[.*?\]\(.*?\))/g, "") // 移除链接
+					.replace(/[*_`~]/g, "")         // 移除强调符号
+					.trim()
+					.slice(0, 100);
+
+				if (summaryText) {
+					textContainer.createEl("p", { text: summaryText + "...", cls: "gallery-card-summary" });
+				}
+				
+				// --- 结束 ---
 
 				// Add click event to open the note
 				card.addEventListener('click', () => {
