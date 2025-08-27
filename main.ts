@@ -1,4 +1,5 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { GalleryView, GALLERY_VIEW_TYPE } from './view';
 
 // Remember to rename these classes and interfaces!
 
@@ -15,6 +16,11 @@ export default class MyPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
+
+		this.registerView(
+			GALLERY_VIEW_TYPE,
+			(leaf) => new GalleryView(leaf)
+		);
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
